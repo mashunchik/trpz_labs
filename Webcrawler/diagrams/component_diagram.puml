@@ -1,0 +1,73 @@
+@startuml Component Diagram
+
+skinparam component {
+    BackgroundColor White
+    BorderColor Black
+}
+
+package "Webcrawler System" {
+    component "Ядро сканера" as Core {
+        interface "HTTP Proxy" as ProxyInterface
+        interface "Page Processing" as ProcessingInterface
+        
+        component "HTTP Proxy Manager" as ProxyManager
+        component "Processing Chain" as ProcessingChain
+        component "State Manager" as StateManager
+    }
+
+    component "Менеджер бази даних" as DBManager {
+        interface "Repository" as RepoInterface
+        component "Page Repository" as PageRepo
+        database "SQLite DB" as DB
+    }
+
+    component "Обробники сторінок" as Processors {
+        component "Title Processor" as TitleProc
+        component "Content Processor" as ContentProc
+        component "Link Processor" as LinkProc
+        component "Metadata Processor" as MetadataProc
+    }
+
+    component "Утиліти" as Utils {
+        component "URL Validator" as URLValidator
+        component "HTML Cleaner" as HTMLCleaner
+        component "Statistics Collector" as StatsCollector
+    }
+}
+
+' External interfaces
+interface "HTTP/HTTPS" as HTTPInterface
+interface "File System" as FSInterface
+
+' Relationships
+Core ..> ProxyInterface
+Core ..> ProcessingInterface
+ProxyManager -- ProxyInterface
+ProcessingChain -- ProcessingInterface
+
+DBManager ..> RepoInterface
+PageRepo -- RepoInterface
+PageRepo -- DB
+
+ProcessingChain --> Processors
+Processors ..> Utils
+
+Core --> HTTPInterface
+DBManager --> FSInterface
+
+note right of Core
+  Ядро системи керує:
+  - HTTP запитами
+  - Обробкою сторінок
+  - Станом сканера
+end note
+
+note right of Processors
+  Ланцюг обробників для:
+  - Витягу заголовків
+  - Очищення контенту
+  - Обробки посилань
+  - Збору метаданих
+end note
+
+@enduml

@@ -1,0 +1,38 @@
+@startuml Web Scanner Use Case Diagram
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor Користувач as User
+actor "Веб-сервер" as Server
+
+rectangle "Система Веб-сканера" {
+    usecase "Запустити сканування" as UC1
+    usecase "Налаштувати сканер" as UC2
+    usecase "Перегляд статистики сканування" as UC3
+    usecase "Зберегти стан сканера" as UC4
+    usecase "Відновити стан сканера" as UC5
+    usecase "Експортувати дані" as UC6
+    usecase "Обробка веб-сторінок" as UC7
+    usecase "Управління базою даних" as UC8
+    usecase "Обробка HTTP запитів" as UC9
+}
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC6
+
+UC1 --> Server : надсилає запити
+UC7 --> Server : отримує вміст
+UC9 --> Server : комунікує
+
+UC1 ..> UC7 : включає
+UC7 ..> UC8 : включає
+UC7 ..> UC9 : включає
+UC1 ..> UC4 : розширює
+UC5 ..> UC1 : розширює
+
+@enduml

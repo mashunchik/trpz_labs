@@ -1,0 +1,51 @@
+@startuml Database Schema
+
+!define table(x) class x << (T,#FFAAAA) >>
+!define primary_key(x) <u>x</u>
+!define foreign_key(x) #x#
+
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
+}
+
+table(pages) {
+    primary_key(id) INTEGER
+    url TEXT <<unique>>
+    title TEXT
+    content TEXT
+    crawled_at TIMESTAMP
+    links TEXT
+    metadata TEXT
+    --
+    Indexes
+    ..
+    + PRIMARY KEY (id)
+    + UNIQUE INDEX (url)
+}
+
+note right of pages
+  - id: Auto-incrementing primary key
+  - url: Unique URL of the crawled page
+  - title: Page title
+  - content: Cleaned page content
+  - crawled_at: Timestamp of crawl
+  - links: Comma-separated list of found URLs
+  - metadata: JSON string of meta tags
+end note
+
+note bottom of pages
+  Table Creation SQL:
+  CREATE TABLE IF NOT EXISTS pages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      url TEXT UNIQUE NOT NULL,
+      title TEXT,
+      content TEXT,
+      crawled_at TIMESTAMP,
+      links TEXT,
+      metadata TEXT
+  )
+end note
+
+@enduml

@@ -1,0 +1,51 @@
+@startuml Deployment Diagram
+
+skinparam node {
+    BackgroundColor White
+    BorderColor Black
+}
+
+node "Клієнтська машина" as ClientMachine {
+    artifact "Web Scanner Application" {
+        component [Scanner Core] as Core
+        component [Database Manager] as DBManager
+        database "SQLite DB" as DB
+    }
+}
+
+node "Веб-сервер 1" as WebServer1 {
+    component [Web Application 1] as WebApp1
+    artifact "HTML Content" as Content1
+}
+
+node "Веб-сервер 2" as WebServer2 {
+    component [Web Application 2] as WebApp2
+    artifact "HTML Content" as Content2
+}
+
+node "Веб-сервер N" as WebServerN {
+    component [Web Application N] as WebAppN
+    artifact "HTML Content" as ContentN
+}
+
+cloud "Інтернет" as Internet
+
+ClientMachine -- Internet : HTTP/HTTPS
+Internet -- WebServer1
+Internet -- WebServer2
+Internet -- WebServerN
+
+note right of ClientMachine
+  Локальний додаток включає:
+  - Ядро сканера
+  - Менеджер БД
+  - SQLite база даних
+end note
+
+note bottom of Internet
+  Підтримує паралельне
+  сканування декількох
+  веб-серверів
+end note
+
+@enduml

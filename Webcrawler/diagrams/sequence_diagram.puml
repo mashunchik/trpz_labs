@@ -1,0 +1,66 @@
+@startuml Sequence Diagram
+
+skinparam sequence {
+    ParticipantBackgroundColor White
+    ParticipantBorderColor Black
+    LifeLineBackgroundColor White
+}
+
+actor "Користувач" as User
+participant "Web Scanner" as Scanner
+participant "HTTP Proxy" as Proxy
+participant "Processing Chain" as Chain
+participant "Page Repository" as Repo
+database "SQLite DB" as DB
+participant "Web Server" as Server
+
+== Ініціалізація ==
+User -> Scanner : запустити сканування(URL)
+activate Scanner
+Scanner -> Proxy : ініціалізувати()
+activate Proxy
+Scanner -> Chain : створитиЛанцюгОбробників()
+activate Chain
+
+== Сканування сторінки ==
+Scanner -> Proxy : отримати(URL)
+Proxy -> Server : HTTP GET
+activate Server
+Server --> Proxy : HTML відповідь
+deactivate Server
+Proxy --> Scanner : HTML документ
+
+Scanner -> Chain : обробити(документ)
+Chain -> Chain : обробкаЗаголовка()
+Chain -> Chain : обробкаКонтенту()
+Chain -> Chain : обробкаПосилань()
+Chain -> Chain : обробкаМетаданих()
+Chain --> Scanner : оброблена сторінка
+
+Scanner -> Repo : зберегти(сторінка)
+activate Repo
+Repo -> DB : insert/update
+activate DB
+DB --> Repo : підтвердження
+deactivate DB
+Repo --> Scanner : результат збереження
+deactivate Repo
+
+== Обробка посилань ==
+loop для кожного нового URL
+    Scanner -> Scanner : додатиДоЧерги(URL)
+end
+
+== Завершення ==
+Scanner -> Scanner : перевіритиЛіміти()
+alt ліміти досягнуті
+    Scanner -> User : завершитиСканування()
+else є ще URL
+    Scanner -> Scanner : продовжитиСканування()
+end
+
+deactivate Chain
+deactivate Proxy
+deactivate Scanner
+
+@enduml

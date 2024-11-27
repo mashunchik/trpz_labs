@@ -1,0 +1,106 @@
+@startuml Web Crawler Class Diagram
+
+' Interfaces
+interface Repository<T, ID> {
+    +save(entity: T): T
+    +findById(id: ID): Optional<T>
+    +findAll(): List<T>
+    +delete(entity: T): void
+    +deleteById(id: ID): void
+    +exists(id: ID): boolean
+}
+
+interface PageProcessor {
+    +setNext(processor: PageProcessor): void
+    +process(document: Document, context: ProcessingContext): void
+}
+
+' Abstract Classes
+abstract class BaseProcessor {
+    #nextProcessor: PageProcessor
+    +setNext(processor: PageProcessor): void
+    #processNext(document: Document, context: ProcessingContext): void
+}
+
+' Classes
+class WebCrawler {
+    -httpProxy: HttpProxy
+    -pageRepository: PageRepository
+    -visitedUrls: Set<String>
+    -pendingUrls: Queue<String>
+    -processingChain: PageProcessor
+    -executorService: ExecutorService
+    -maxDepth: int
+    -maxPages: int
+    +WebCrawler(repository: PageRepository, maxDepth: int, maxPages: int, numThreads: int)
+    +crawl(startUrl: String): void
+    -processSingleUrl(url: String): void
+    +saveState(): CrawlerState
+    +restoreState(state: CrawlerState): void
+    +shutdown(): void
+}
+
+class HttpProxy {
+    -cache: Map<String, Document>
+    -lastAccessTime: Map<String, Long>
+    +fetch(url: String): Document
+    +clearCache(): void
+}
+
+class Page {
+    -id: Long
+    -url: String
+    -title: String
+    -content: String
+    -crawledAt: LocalDateTime
+    -links: Set<String>
+    -metadata: String
+}
+
+class PageRepository {
+    -DB_URL: String
+    +save(page: Page): Page
+    +findById(id: Long): Optional<Page>
+    +findAll(): List<Page>
+    -initializeDatabase(): void
+    -mapResultSetToPage(rs: ResultSet): Page
+}
+
+class ProcessingContext {
+    -url: String
+    -title: String
+    -content: String
+    -links: Set<String>
+    -metadata: String
+    +toPage(): Page
+}
+
+class CrawlerState {
+    -visitedUrls: Set<String>
+    -pendingUrls: Set<String>
+    -timestamp: long
+}
+
+' Concrete Processors
+class TitleProcessor
+class ContentProcessor
+class LinkProcessor
+class MetadataProcessor
+
+' Relationships
+Repository <|.. PageRepository
+PageProcessor <|.. BaseProcessor
+BaseProcessor <|-- TitleProcessor
+BaseProcessor <|-- ContentProcessor
+BaseProcessor <|-- LinkProcessor
+BaseProcessor <|-- MetadataProcessor
+
+WebCrawler --> HttpProxy
+WebCrawler --> PageRepository
+WebCrawler --> PageProcessor
+WebCrawler --> CrawlerState
+
+PageRepository --> Page
+ProcessingContext --> Page
+
+@enduml
